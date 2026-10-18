@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hunter – Find free tools without installing anything</title>
+<style>
+:root{
+  --bg:#0e1b2c; --panel:#15263d; --line:#25405f; --text:#e8eef5; --mute:#9db0c6;
+  --sig:#f2c230; --sig-ink:#1a1500; --hot:#ff6b57; --ok:#4fd1a5;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#eef3f8; --panel:#ffffff; --line:#c9d6e4; --text:#10233a; --mute:#52667d;
+  --sig:#e0a800; --sig-ink:#1a1500; --hot:#d6402c; --ok:#0f9d74;
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100%;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.wrap{max-width:960px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 4px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.35rem;letter-spacing:.5px}
+.brand svg{width:30px;height:30px}
+.icon-btn{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}
+h1{font-size:clamp(1.9rem,7vw,3.2rem);line-height:1.08;margin:18px 0 8px;max-width:16ch;font-weight:800}
+.sub{color:var(--mute);max-width:46ch}
+.hunt{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.btn{border:0;border-radius:12px;padding:13px 18px;font:inherit;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--sig);color:var(--sig-ink)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn:focus-visible,.icon-btn:focus-visible,input:focus-visible,select:focus-visible,.chip:focus-visible,a:focus-visible{outline:3px solid var(--sig);outline-offset:2px}
+.target{display:none;border:2px solid var(--sig);border-radius:14px;padding:14px;margin-bottom:16px;background:var(--panel)}
+.target.on{display:block}
+.target b{color:var(--sig)}
+.search{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 8px}
+input[type=search],input[type=text],input[type=url],select{width:100%;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:13px 14px;font:inherit}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font:inherit;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed=true]{background:var(--text);color:var(--bg);border-color:var(--text)}
+.count{color:var(--mute);font-size:.9rem;margin:8px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--cat,var(--sig));border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.card h3{font-size:1.05rem;word-break:break-word}
+.card p{color:var(--mute);font-size:.92rem;flex:1}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.82rem;color:var(--mute)}
+.row{display:flex;gap:8px}
+.open{flex:1;text-align:center;text-decoration:none;background:var(--sig);color:var(--sig-ink);font-weight:700;border-radius:10px;padding:10px}
+.star{background:transparent;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 13px;cursor:pointer;font-size:1rem}
+.star[aria-pressed=true]{color:var(--sig);border-color:var(--sig)}
+.del{color:var(--hot)}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--mute);grid-column:1/-1}
+details{margin:26px 0;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+summary{font-weight:700;cursor:pointer}
+form{display:grid;gap:10px;margin-top:12px}
+label{font-size:.9rem;color:var(--mute)}
+footer{border-top:1px solid var(--line);margin-top:30px;padding:18px 0 28px;color:var(--mute);font-size:.92rem}
+footer a{color:var(--sig)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="16" cy="16" r="10" style="color:var(--sig)"/><circle cx="16" cy="16" r="2.5" fill="var(--hot)" stroke="none"/><path d="M16 2v7M16 23v7M2 16h7M23 16h7"/></svg>
+      Hunter
+    </div>
+    <button class="icon-btn" id="theme" aria-label="Switch light or dark theme">Theme</button>
+  </header>
+
+  <h1>Find a free tool. Open it. No download.</h1>
+  <p class="sub">Games, AI tools, photo and video editors, and PDF helpers that run right in your browser.</p>
+
+  <div class="hunt">
+    <button class="btn primary" id="hunt">Hunt a random tool</button>
+    <button class="btn ghost" id="favOnly" aria-pressed="false">Show saved only</button>
+  </div>
+  <div class="target" id="target" role="status"></div>
+
+  <div class="search">
+    <input type="search" id="q" placeholder="Search: background remove, games, pdf…" aria-label="Search tools" autocomplete="off">
+    <div class="chips" id="chips" role="group" aria-label="Categories"></div>
+  </div>
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+
+  <details>
+    <summary>Add your own tool</summary>
+    <form id="add">
+      <div><label for="n">Name</label><input type="text" id="n" required maxlength="40"></div>
+      <div><label for="u">Link</label><input type="url" id="u" required placeholder="https://"></div>
+      <div><label for="c">Category</label><select id="c"></select></div>
+      <div><label for="d">What it does</label><input type="text" id="d" maxlength="90"></div>
+      <button class="btn primary" type="submit">Save tool</button>
+    </form>
+  </details>
+
+  <footer>
+    Made by Ebrat Hossen · <a href="https://www.facebook.com/ebrathossen" target="_blank" rel="noopener">Facebook</a> ·
+    <a href="https://m.me/ebrathossen" target="_blank" rel="noopener">Messenger</a> ·
+    <a href="mailto:ebrathossen720@gmail.com">ebrathossen720@gmail.com</a>
+    <br>Your saved tools and added tools stay on this device.
+  </footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+var CATS = {
+  "Online Games":"#ff6b57",
+  "Social Media":"#7aa2ff",
+  "AI Tools":"#b388ff",
+  "Photo Tools":"#4fd1a5",
+  "Video Tools":"#f2c230",
+  "Other Tools":"#ff9f43"
+};
+var BASE = [
+ ["PlayBrain","https://playbrain.games/","Online Games","Brain-training and puzzle games."],
+ ["Pogo","https://www.pogo.com/","Online Games","Classic card, word and puzzle games."],
+ ["GameTop","https://www.gametop.com/online/index.html","Online Games","Play many casual games in the browser."],
+ ["PlayHop","https://playhop.com/","Online Games","Free games for every age."],
+ ["OnlineGames.io","https://www.onlinegames.io/t/free/","Online Games","Large list of free instant-play games."],
+ ["now.gg","https://now.gg/","Online Games","Run mobile games in your browser."],
+ ["Facebook","https://www.facebook.com/","Social Media","Connect with friends and pages."],
+ ["Instagram","https://www.instagram.com/","Social Media","Photos, reels and stories."],
+ ["YouTube","https://www.youtube.com/","Social Media","Watch and share videos."],
+ ["There’s An AI For That","https://free.theresanaiforthat.com/","AI Tools","Directory of free AI tools."],
+ ["Google Flow","https://flow.google.com/","AI Tools","Create AI video scenes."],
+ ["Hugging Face Spaces","https://huggingface.co/spaces","AI Tools","Try thousands of AI demos."],
+ ["Remove.bg","https://www.remove.bg/","Photo Tools","Remove image backgrounds fast."],
+ ["Photoroom Tools","https://www.photoroom.com/tools/","Photo Tools","Background, resize and product photo tools."],
+ ["iLoveIMG Remove Background","https://www.iloveimg.com/remove-background","Photo Tools","Cut out backgrounds in one tap."],
+ ["ImgTools","https://www.imgtools.co/","Photo Tools","Simple online image tools."],
+ ["Upscaler.video","https://free.upscaler.video/","Video Tools","Make low-quality video sharper."],
+ ["ArtPlayer Upscaler","https://artplayer.org/upscaler/","Video Tools","Upscale video in the browser."],
+ ["TensorPix","https://app.tensorpix.ai/","Video Tools","AI video and image enhancer."],
+ ["PDF24 Tools","https://tools.pdf24.org/en/","Other Tools","Merge, split, compress and convert PDFs."],
+ ["Smallpdf","https://smallpdf.com/pdf-tools","Other Tools","Edit and convert PDF files."],
+ ["TinyURL","https://tinyurl.com/","Other Tools","Shorten long links."],
+ ["ShortURL","https://www.shorturl.at/","Other Tools","Make short links to share."]
+].map(function(t,i){return {id:"b"+i,name:t[0],url:t[1],cat:t[2],desc:t[3],custom:false}});
+
+var $ = function(s){return document.querySelector(s)};
+var store = {
+  get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+var custom = store.get("hunter_custom",[]);
+var favs = store.get("hunter_favs",[]);
+var state = {cat:"All", q:"", favOnly:false};
+
+function all(){return BASE.concat(custom)}
+function host(u){try{return new URL(u).hostname.replace("www.","")}catch(e){return u}}
+function toast(m){var t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){t.classList.remove("on")},1800)}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+
+function copyLink(url){
+  function fallback(){
+    var a=document.createElement("textarea");
+    a.value=url;a.setAttribute("readonly","");
+    a.style.cssText="position:fixed;top:0;left:0;opacity:0";
+    document.body.appendChild(a);a.select();a.setSelectionRange(0,url.length);
+    var ok=false;try{ok=document.execCommand("copy")}catch(e){}
+    document.body.removeChild(a);
+    toast(ok?"Link copied":"Copy failed. Long-press the link to copy.");
+  }
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(url).then(function(){toast("Link copied")},fallback);
+  }else{fallback()}
+}
+
+function chips(){
+  var el=$("#chips"); el.innerHTML="";
+  ["All"].concat(Object.keys(CATS)).forEach(function(c){
+    var b=document.createElement("button");
+    b.className="chip"; b.textContent=c; b.setAttribute("aria-pressed",state.cat===c);
+    b.onclick=function(){state.cat=c;chips();render()};
+    el.appendChild(b);
+  });
+  $("#c").innerHTML=Object.keys(CATS).map(function(c){return "<option>"+c+"</option>"}).join("");
+}
+
+function render(){
+  var q=state.q.toLowerCase();
+  var list=all().filter(function(t){
+    if(state.cat!=="All"&&t.cat!==state.cat)return false;
+    if(state.favOnly&&favs.indexOf(t.id)<0)return false;
+    return !q||(t.name+" "+t.desc+" "+t.cat+" "+host(t.url)).toLowerCase().indexOf(q)>-1;
+  });
+  $("#count").textContent=list.length+" tool"+(list.length===1?"":"s")+" found";
+  var g=$("#grid");
+  if(!list.length){g.innerHTML='<div class="empty">Nothing matched. Try another word, pick All, or add your own tool below.</div>';return}
+  g.innerHTML=list.map(function(t){
+    var f=favs.indexOf(t.id)>-1;
+    return '<article class="card" style="--cat:'+CATS[t.cat]+'">'+
+      '<h3>'+esc(t.name)+'</h3><p>'+esc(t.desc||"No description added.")+'</p>'+
+      '<div class="meta"><span>'+esc(t.cat)+'</span><span>'+esc(host(t.url))+'</span></div>'+
+      '<div class="row"><a class="open" href="'+esc(t.url)+'" target="_blank" rel="noopener">Open tool</a>'+
+      '<button class="star copy" data-c="'+t.id+'" aria-label="Copy link">Copy</button>'+
+      '<button class="star" data-s="'+t.id+'" aria-pressed="'+f+'" aria-label="'+(f?"Remove from saved":"Save tool")+'">'+(f?"★":"☆")+'</button>'+
+      (t.custom?'<button class="star del" data-d="'+t.id+'" aria-label="Delete tool">✕</button>':'')+
+      '</div></article>';
+  }).join("");
+}
+
+$("#grid").addEventListener("click",function(e){
+  var c=e.target.closest("[data-c]");
+  if(c){
+    var tool=all().filter(function(t){return t.id===c.dataset.c})[0];
+    if(tool)copyLink(tool.url);
+    return;
+  }
+  var s=e.target.closest("[data-s]"),d=e.target.closest("[data-d]");
+  if(s){var id=s.dataset.s,i=favs.indexOf(id);
+    if(i>-1){favs.splice(i,1);toast("Removed from saved")}else{favs.push(id);toast("Saved")}
+    store.set("hunter_favs",favs);render()}
+  if(d&&confirm("Delete this tool?")){
+    custom=custom.filter(function(t){return t.id!==d.dataset.d});
+    store.set("hunter_custom",custom);render();toast("Deleted")}
+});
+
+$("#q").addEventListener("input",function(e){state.q=e.target.value;render()});
+$("#favOnly").onclick=function(){
+  state.favOnly=!state.favOnly;this.setAttribute("aria-pressed",state.favOnly);
+  this.textContent=state.favOnly?"Show all tools":"Show saved only";render();
+};
+$("#hunt").onclick=function(){
+  var pool=all().filter(function(t){return state.cat==="All"||t.cat===state.cat});
+  var t=pool[Math.floor(Math.random()*pool.length)];
+  var el=$("#target");
+  el.innerHTML="<b>Target found:</b> "+esc(t.name)+" — "+esc(t.desc)+
+    ' <a href="'+esc(t.url)+'" target="_blank" rel="noopener" style="color:var(--sig);font-weight:700">Open it</a>';
+  el.classList.add("on");
+};
+$("#add").addEventListener("submit",function(e){
+  e.preventDefault();
+  var url=$("#u").value.trim();
+  if(!/^https?:\/\//i.test(url)){toast("Link must start with https://");return}
+  custom.push({id:"c"+Date.now(),name:$("#n").value.trim(),url:url,cat:$("#c").value,desc:$("#d").value.trim(),custom:true});
+  store.set("hunter_custom",custom);this.reset();render();toast("Tool added");
+});
+$("#theme").onclick=function(){
+  var r=document.documentElement,n=r.dataset.theme==="light"?"dark":"light";
+  r.dataset.theme=n;store.set("hunter_theme",n);
+};
+(function(){
+  var t=store.get("hunter_theme",null);
+  if(!t&&window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches)t="light";
+  if(t)document.documentElement.dataset.theme=t;
+})();
+chips();render();
+</script>
+</body>
+</html>
